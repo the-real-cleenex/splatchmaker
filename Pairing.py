@@ -1,4 +1,8 @@
-def test():
-    print("my name is death")
+import json
+from pprint import pprint
 
-test()
+mapList = json.load(open("maps.json"))
+toPreferences = json.load(open("toPreferences.json"))
+
+
+
