@@ -1,14 +1,161 @@
 {
     "data": [
         {
+            "name": "The Reef",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "cb"
+            ]
+        },      
+        {
+            "name": "Musselforge Fitness",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Starfish Mainstage",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "cb"
+            ]
+        },
+        {
+            "name": "Humpback Pump Track",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Inkblot Art Academy",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Moray Towers",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Port Mackerel",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Sturgeon Shipyards",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Manta Maria",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Kelp Dome",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Snapper Canal",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
             "name": "Blackbelly Skatepark",
             "allowedModes": [
-                "rainmaker",
-                
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
             ]
-        }
+        },
         {
-
+            "name": "MakoMart",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Walleye Warehouse",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Shellendorf Institute",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
+        },
+        {
+            "name": "Arowana Mall",
+            "allowedModes": [
+                "tw",
+                "sz",
+                "tc",
+                "rm",
+                "cb"
+            ]
         }
     ]
 }
