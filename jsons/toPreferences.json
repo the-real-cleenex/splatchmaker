@@ -1,6 +1,8 @@
 {
-    "data": {
-        "tournamentID": "vanishingcrutchs1",
+    "metadata" : {
+        "tournamentID" : "vanishingcrutchs1"
+    },
+    "rules": {
         "bannedModes": [
             "tw"
         ],
