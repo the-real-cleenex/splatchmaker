@@ -1,6 +1,6 @@
 import json
 from pprint import pprint
-from teamEntry import *
+from inputParser import *
 
 def main():
     mapList = json.load(open("jsons\\maps.json"))["data"]
