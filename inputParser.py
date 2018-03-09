@@ -2,15 +2,44 @@ import re
 import fileinput
 import csv
 
-def googleFormsSanitizer(fileName):
-    csv = str(open(fileName,"r").read())
+# Generate a formatted dictionary object from Google Forms CSV output.
+# The dictionary is keyed by team name, and by internal field within
+# each team's data..
 
-    # Clean out introductory text.
-    pattern = re.compile("\"Choose your \w+? preferences \[(?P<content>.*?)\]\",")
-    csv = re.sub(pattern, "\g<1>,",csv)
+def parseGoogleFormsCSV(fileName):
+    with open(fileName, "r") as entryData:
+        data = str(entryData.read())
 
-    csv = re.sub("\"", "", csv) # Clean out extraneous quotation marks.
-    # csv = csv.split("\n")
-    print(csv)
+        # Clean out introductory text.
+        pattern = re.compile("\"Choose your \w+? preferences \[(?P<content>.*?)\]\",")
+        data = re.sub("\"", "", data)
+        data = re.sub(pattern, "\g<1>,", data)
+        print(data)
 
-googleFormsSanitizer("sendou.csv")
+        data = data.split("\n")
+        preferenceData = {}
+
+        header=True
+
+        for row in data:
+            if header:
+                fields = row.split(",")
+                header = False
+            else:
+                if row.strip():
+                    teamValues = row.split(",")
+                    teamDict = {}
+                    index = 0
+                    for field in fields:
+                        if field != 'Team Name':
+                            teamDict[field] = teamValues[index]
+                        index = index + 1
+                    preferenceData[teamValues[1]] = teamDict
+
+        return preferenceData
+
+def compareTeamPreferences(data, field, teamOne, teamTwo):
+    return data[teamOne][field] == data[teamTwo][field]
+
+print(parseGoogleFormsCSV("sendou.csv"))
+print(compareTeamPreferences(parseGoogleFormsCSV("sendou.csv"),'Team Captain Discord Handle', 'zzz deprived', 'testing'))
