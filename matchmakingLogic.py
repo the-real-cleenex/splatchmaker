@@ -28,7 +28,6 @@ def transformWeighting(weightingMode, raw):
     return raw
 
 def makeMatch(weightingMode, entryData, teamOne, teamTwo):
-    'Do you prefer to play Splat Zones only?'
     stagesAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
     validStages = {}
     validModes = {}
@@ -41,7 +40,21 @@ def makeMatch(weightingMode, entryData, teamOne, teamTwo):
 
     if compareTeamPreference(entryData, 'Do you prefer to play Splat Zones only?', teamOne, teamTwo):
         if entryData[teamOne]['Do you prefer to play Splat Zones only?'] == 'Yes':
-            validModes.append('Splat Zones')
+            validModes['Splat Zones'] = 1
+        else:
+            for mode in stagesAndModes['modes']:
+                if mode == 'Turf War':
+                    if compareTeamPreference(entryData, 'Would you like Turf War to be included in your map lists next to other modes?', teamOne, teamTwo):
+                        if entryData[teamOne]['Would you like Turf War to be included in your map lists next to other modes?'] == 'Yes':
+                            cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
+
+                            validModes[mode] = cursorWeight
+                            totalModeWeight = totalModeWeight + cursorWeight
+                else:
+                    cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
+
+                    validModes[mode] = cursorWeight
+                    totalModeWeight = totalModeWeight + cursorWeight
     else:
         for mode in stagesAndModes['modes']:
             if mode == 'Turf War':
@@ -66,9 +79,6 @@ def makeMatch(weightingMode, entryData, teamOne, teamTwo):
     randomMode = int(random.uniform(0, totalModeWeight))
     randomStage = int(random.uniform(0, totalStageWeight))
 
-    print(randomMode)
-    print(randomStage)
-
     for mode in validModes:
         randomMode = randomMode - validModes[mode]
         if randomMode < 0:
@@ -86,11 +96,14 @@ def makeMatch(weightingMode, entryData, teamOne, teamTwo):
     #pp = pprint.PrettyPrinter(indent=4)
     #pp.pprint(validModes)
     #pp.pprint(validStages)
-    print(totalModeWeight)
-    print(totalStageWeight)
 
 def generateSetListArray(weightingTable, teamOne, teamTwo):
     print()
 
-sampleData = parseGoogleFormsCSV("sendou.csv")
-makeMatch('yesElim',sampleData, "Team Olive", "SetToDestroyX")
+sampleData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
+#makeMatch('yesElim',sampleData, "Team Olive", "SetToDestroyX")
+
+for teamOne in sampleData:
+    for teamTwo in sampleData:
+        if teamOne != teamTwo:
+            makeMatch('yesElim', sampleData, teamOne, teamTwo)
