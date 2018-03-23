@@ -1,6 +1,7 @@
 from inputParser import *
 import json
 import fileinput
+import random
 import pprint
 
 def compareTeamPreference(data, field, teamOne, teamTwo):
@@ -12,41 +13,84 @@ def findRawWeighting(data, field, teamOne, teamTwo):
     weight = 0
     for team in [teamOne, teamTwo]:
         if data[team][field] == 'Not preferred':
-            weight = weight - 1
-        elif data[team][field] == 'Preferred':
             weight = weight + 1
-        elif data[team][field] != 'Neutral':
+        elif data[team][field] == 'Preferred':
+            weight = weight + 3
+        elif data[team][field] == 'Neutral':
+            weight = weight + 2
+        else: # This weighting is for a mode, not a map.
             weight = abs(int(data[team][field]) - 6)
     return weight
 
 def transformWeighting(weightingMode, raw):
     if weightingMode == 'noElim':
-        return raw + 2
+        return raw + 1
+    return raw
+
+def makeMatch(weightingMode, entryData, teamOne, teamTwo):
+    'Do you prefer to play Splat Zones only?'
+    stagesAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
+    validStages = {}
+    validModes = {}
+
+    stageSelection = ''
+    modeSelection = ''
+
+    totalStageWeight = 0
+    totalModeWeight = 0
+
+    if compareTeamPreference(entryData, 'Do you prefer to play Splat Zones only?', teamOne, teamTwo):
+        if entryData[teamOne]['Do you prefer to play Splat Zones only?'] == 'Yes':
+            validModes.append('Splat Zones')
     else:
-        return raw
+        for mode in stagesAndModes['modes']:
+            if mode == 'Turf War':
+                if compareTeamPreference(entryData, 'Would you like Turf War to be included in your map lists next to other modes?', teamOne, teamTwo):
+                    if entryData[teamOne]['Would you like Turf War to be included in your map lists next to other modes?'] == 'Yes':
+                        cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
 
-def generateWeightingTable(weightingMode, entryData):
-    mapsAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
-    mapWeightTable = {}
-    modeWeightTable = {}
+                        validModes[mode] = cursorWeight
+                        totalModeWeight = totalModeWeight + cursorWeight
+            else:
+                cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
 
-    for teamOne in entryData:
-        for teamTwo in entryData:
-            if teamOne != teamTwo:
-                for stage in mapsAndModes['maps']:
-                    mapWeightTable[stage] = transformWeighting(weightingMode, findRawWeighting(entryData, stage, teamOne, teamTwo))
-                for mode in mapsAndModes['modes']:
-                    modeWeightTable[mode] = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
+                validModes[mode] = cursorWeight
+                totalModeWeight = totalModeWeight + cursorWeight
 
+    for stage in stagesAndModes['stages']:
+        cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, stage, teamOne, teamTwo))
 
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(modeWeightTable)
+        validStages[stage] = cursorWeight
+        totalStageWeight = totalStageWeight + cursorWeight
+
+    randomMode = int(random.uniform(0, totalModeWeight))
+    randomStage = int(random.uniform(0, totalStageWeight))
+
+    print(randomMode)
+    print(randomStage)
+
+    for mode in validModes:
+        randomMode = randomMode - validModes[mode]
+        if randomMode < 0:
+            modeSelection = mode
+            break
+
+    for stage in validStages:
+        randomStage = randomStage - validStages[stage]
+        if randomStage < 0:
+            stageSelection = stage
+            break
+
+    print('{teamOne} vs. {teamTwo} : {mode} on {stage}'.format(teamOne=teamOne, teamTwo = teamTwo, mode=modeSelection, stage=stageSelection))
+
+    #pp = pprint.PrettyPrinter(indent=4)
+    #pp.pprint(validModes)
+    #pp.pprint(validStages)
+    print(totalModeWeight)
+    print(totalStageWeight)
 
 def generateSetListArray(weightingTable, teamOne, teamTwo):
     print()
 
 sampleData = parseGoogleFormsCSV("sendou.csv")
-print(generateWeightingTable('yesElim',sampleData))
-#print(transformWeighting('elim',findRawWeighting(sampleData, 'Port Mackerel', 'zzz deprived', 'testing')))
-
-
+makeMatch('yesElim',sampleData, "Team Olive", "SetToDestroyX")
