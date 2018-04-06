@@ -7,7 +7,14 @@
             "Turf War"
         ],
         "bannedStages": [
-            
+            "The Reef",
+            "Humpback Pump Track",
+            "Sturgeon Shipyard",
+            "Manta Maria",
+            "Kelp Dome",
+            "MakoMart",
+            "Piranha Pit",
+            "Goby Arena"
         ]
     }
 }

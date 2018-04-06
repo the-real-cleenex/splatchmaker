@@ -40,11 +40,14 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Generate the base list of valid stages, loading from mapsandModes.json and striking listed
     # stages out of toPreferences.json.
     validStages = stagesAndModes['stages']
-    for strike in toPreferences['rules']['bannedStages']:
-        try: # Handle the potential exception for an unlisted stage.
-            validStages.remove(strike)
-        except:
-            pass
+    
+    if compareTeamPreference(data, onlySZ, teamOne, teamTwo) and \
+        data[teamOne][onlySZ] == 'Yes':
+        for strike in toPreferences['rules']['bannedStages']:
+            try: # Handle the potential exception for an unlisted stage.
+                validStages.remove(strike)
+            except:
+                pass
 
     # Generate the base list of valid modes, loading from mapsandModes.json and striking listed
     # modes out of toPreferences.json.
@@ -55,7 +58,7 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
         except:
             pass
     
-    # Handle team map strikes.
+    # Handle team mode strikes.
     try:
         validModes.remove(data[teamOne][modeStrike])
     except:
@@ -93,8 +96,6 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     while currentRound < rounds:
         # Iterate the current mode through the list.  Reset pointer if end is reached.
         currentModeIndex = currentModeIndex + 1
-        #if currentModeIndex >= validModes.__len__():
-        #    currentModeIndex = 0
 
         randomStage = int(random.uniform(0, totalStageWeight))
         for stage in validStages:
@@ -104,6 +105,7 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
                 validStages.remove(stage)
                 break
         
+        # Produce output.
         print('{teamOne} vs {teamTwo} playing {mode} on {stage}'.format(teamOne = teamOne, \
                                                                         teamTwo = teamTwo, \
                                                                         mode = validModes[currentModeIndex % validModes.__len__()], \
