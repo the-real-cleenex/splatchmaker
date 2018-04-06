@@ -9,7 +9,7 @@ def compareTeamPreference(data, field, teamOne, teamTwo):
 
 # Generates a raw weighting value for subsequent transformation based on a 
 # comparison between relevant preferences.
-def findRawWeighting(data, field, teamOne, teamTwo):
+def rawWeighting(data, field, teamOne, teamTwo):
     weight = 0
     for team in [teamOne, teamTwo]:
         if data[team][field] == 'Not preferred':
@@ -29,13 +29,13 @@ def transformWeighting(weightingMode, raw):
 
 def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Define shorthand strings for looking up specific preferences.
-    yesTW = 'Would you like Turf War to be included in your map lists next to other modes?'
+    yesTW = 'Would you like Turf War to be included in your map lists along other modes?'
     onlySZ = 'Do you prefer to play Splat Zones only?'
     modeStrike = 'Strike a ranked mode (optional)'
 
     # Load relevant JSON data.
     stagesAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
-    toPreferences = json.load(open('/jsons/toPreferences.json','r'))
+    toPreferences = json.load(open('./jsons/toPreferences.json','r'))
     
     # Generate the base list of valid stages, loading from mapsandModes.json and striking listed
     # stages out of toPreferences.json.
@@ -72,9 +72,45 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
 
     if compareTeamPreference(data, yesTW, teamOne, teamTwo) and \
         data[teamOne][yesTW] == 'Yes':
-        validModes.append['Turf War']
+        validModes.append('Turf War')
 
-    modeCount = {}
+    # Generate weighting list for stages.
+    stageWeighting = {}
+    totalStageWeight = 0
+    for stage in validStages:
+        stageWeight = transformWeighting(weightingMode , \
+                        rawWeighting(data, stage, teamOne, teamTwo))
+        stageWeighting[stage] = stageWeight
+        totalStageWeight = totalStageWeight + stageWeight
+
+    # Pick starting point in modes list.
+    currentModeIndex = 0
+    if validModes.__len__() > 1:
+        currentModeIndex = random.uniform(0, validModes.__len__() - 1)
+
+    # Generate rounds# of stage:mode pairs.
+    currentRound = 0
+    while currentRound < rounds:
+        # Iterate the current mode through the list.  Reset pointer if end is reached.
+        currentModeIndex = currentModeIndex + 1
+        #if currentModeIndex >= validModes.__len__():
+        #    currentModeIndex = 0
+
+        randomStage = random.uniform(0, totalStageWeight)
+        for stage in validStages:
+            randomStage = randomStage - stageWeighting[stage]
+            if randomStage <= 0:
+                currentStage = stage
+                validStages.remove(stage)
+                break
+        
+        print('{teamOne} vs {teamTwo} playing {mode} on {stage}'.format(teamOne = teamOne, \
+                                                                        teamTwo = teamTwo, \
+                                                                        mode = validModes[int(currentModeIndex % validModes.__len__())], \
+                                                                        stage = currentStage))
+
+        currentRound = currentRound + 1
+
 
 sampleData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
 
