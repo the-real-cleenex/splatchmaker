@@ -27,83 +27,60 @@ def transformWeighting(weightingMode, raw):
         return raw + 1
     return raw
 
-def makeMatch(weightingMode, entryData, teamOne, teamTwo):
+def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
+    # Define shorthand strings for looking up specific preferences.
+    yesTW = 'Would you like Turf War to be included in your map lists next to other modes?'
+    onlySZ = 'Do you prefer to play Splat Zones only?'
+    modeStrike = 'Strike a ranked mode (optional)'
+
+    # Load relevant JSON data.
     stagesAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
-    validStages = {}
-    validModes = {}
+    toPreferences = json.load(open('/jsons/toPreferences.json','r'))
+    
+    # Generate the base list of valid stages, loading from mapsandModes.json and striking listed
+    # stages out of toPreferences.json.
+    validStages = stagesAndModes['stages']
+    for strike in toPreferences['rules']['bannedStages']:
+        try: # Handle the potential exception for an unlisted stage.
+            validStages.remove(strike)
+        except:
+            pass
 
-    stageSelection = ''
-    modeSelection = ''
+    # Generate the base list of valid modes, loading from mapsandModes.json and striking listed
+    # modes out of toPreferences.json.
+    validModes = stagesAndModes['modes']
+    for strike in toPreferences['rules']['bannedModes']:
+        try: # Handle the potential exception for an unlisted mode.
+            validModes.remove(strike)
+        except:
+            pass
+    
+    # Handle team map strikes.
+    try:
+        validModes.remove(data[teamOne][modeStrike])
+    except:
+        pass
+    try:
+        validModes.remove(data[teamTwo][modeStrike])
+    except:
+        pass
 
-    totalStageWeight = 0
-    totalModeWeight = 0
+    # Handle mode-specific survey questions.
+    if compareTeamPreference(data, onlySZ, teamOne, teamTwo) and \
+        data[teamOne][onlySZ] == 'Yes':
+        validModes = ['Splat Zones']
 
-    if compareTeamPreference(entryData, 'Do you prefer to play Splat Zones only?', teamOne, teamTwo):
-        if entryData[teamOne]['Do you prefer to play Splat Zones only?'] == 'Yes':
-            validModes['Splat Zones'] = 1
-        else:
-            for mode in stagesAndModes['modes']:
-                if mode == 'Turf War':
-                    if compareTeamPreference(entryData, 'Would you like Turf War to be included in your map lists next to other modes?', teamOne, teamTwo):
-                        if entryData[teamOne]['Would you like Turf War to be included in your map lists next to other modes?'] == 'Yes':
-                            cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
+    if compareTeamPreference(data, yesTW, teamOne, teamTwo) and \
+        data[teamOne][yesTW] == 'Yes':
+        validModes.append['Turf War']
 
-                            validModes[mode] = cursorWeight
-                            totalModeWeight = totalModeWeight + cursorWeight
-                else:
-                    cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
-
-                    validModes[mode] = cursorWeight
-                    totalModeWeight = totalModeWeight + cursorWeight
-    else:
-        for mode in stagesAndModes['modes']:
-            if mode == 'Turf War':
-                if compareTeamPreference(entryData, 'Would you like Turf War to be included in your map lists next to other modes?', teamOne, teamTwo):
-                    if entryData[teamOne]['Would you like Turf War to be included in your map lists next to other modes?'] == 'Yes':
-                        cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
-
-                        validModes[mode] = cursorWeight
-                        totalModeWeight = totalModeWeight + cursorWeight
-            else:
-                cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, mode, teamOne, teamTwo))
-
-                validModes[mode] = cursorWeight
-                totalModeWeight = totalModeWeight + cursorWeight
-
-    for stage in stagesAndModes['stages']:
-        cursorWeight = transformWeighting(weightingMode, findRawWeighting(entryData, stage, teamOne, teamTwo))
-
-        validStages[stage] = cursorWeight
-        totalStageWeight = totalStageWeight + cursorWeight
-
-    randomMode = int(random.uniform(0, totalModeWeight))
-    randomStage = int(random.uniform(0, totalStageWeight))
-
-    for mode in validModes:
-        randomMode = randomMode - validModes[mode]
-        if randomMode < 0:
-            modeSelection = mode
-            break
-
-    for stage in validStages:
-        randomStage = randomStage - validStages[stage]
-        if randomStage < 0:
-            stageSelection = stage
-            break
-
-    print('{teamOne} vs. {teamTwo} : {mode} on {stage}'.format(teamOne=teamOne, teamTwo = teamTwo, mode=modeSelection, stage=stageSelection))
-
-    #pp = pprint.PrettyPrinter(indent=4)
-    #pp.pprint(validModes)
-    #pp.pprint(validStages)
-
-def generateSetListArray(weightingTable, teamOne, teamTwo):
-    print()
+    modeCount = {}
 
 sampleData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
-#makeMatch('yesElim',sampleData, "Team Olive", "SetToDestroyX")
+
+#makeMatch('yesElim', sampleData, "Team Olive", "The binx's", 5)
 
 for teamOne in sampleData:
     for teamTwo in sampleData:
         if teamOne != teamTwo:
-            makeMatch('yesElim', sampleData, teamOne, teamTwo)
+            makeMatch('yesElim', sampleData, teamOne, teamTwo, 5)

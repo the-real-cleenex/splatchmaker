@@ -7,7 +7,7 @@ import fileinput
 # each team's data.
 
 def parseGoogleFormsCSV(fileName):
-    with open(fileName, "r") as entryData:
+    with open(fileName, "r", encoding='utf8') as entryData:
         toParse = str(entryData.read())
 
         # Clean out form-only instructional text.
