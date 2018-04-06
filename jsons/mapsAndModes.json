@@ -1,5 +1,17 @@
 {
     "stages" : [
+        "Arowana Mall",
+        "Blackbelly Skatepark",
+        "Sturgeon Shipyard",
+        "Manta Maria",
+        "MakoMart",
+        "Snapper Canal",
+        "The Reef",
+        "Kelp Dome",
+        "Humpback Pump Track",
+        "Piranha Pit"
+    ],
+    "allStages" : [
         "The Reef",
         "Musselforge Fitness",
         "Starfish Mainstage",
@@ -12,7 +24,8 @@
         "Kelp Dome",
         "MakoMart",
         "Walleye Warehouse",
-        "Shellendorf Institute"
+        "Shellendorf Institute",
+        "Piranha Pit"
     ],
     "modes" : [
         "Turf War",

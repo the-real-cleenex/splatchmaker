@@ -86,7 +86,7 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Pick starting point in modes list.
     currentModeIndex = 0
     if validModes.__len__() > 1:
-        currentModeIndex = random.uniform(0, validModes.__len__() - 1)
+        currentModeIndex = int(random.uniform(0, validModes.__len__() + 1))
 
     # Generate rounds# of stage:mode pairs.
     currentRound = 0
@@ -96,17 +96,17 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
         #if currentModeIndex >= validModes.__len__():
         #    currentModeIndex = 0
 
-        randomStage = random.uniform(0, totalStageWeight)
+        randomStage = int(random.uniform(0, totalStageWeight))
         for stage in validStages:
             randomStage = randomStage - stageWeighting[stage]
+            currentStage = stage
             if randomStage <= 0:
-                currentStage = stage
                 validStages.remove(stage)
                 break
         
         print('{teamOne} vs {teamTwo} playing {mode} on {stage}'.format(teamOne = teamOne, \
                                                                         teamTwo = teamTwo, \
-                                                                        mode = validModes[int(currentModeIndex % validModes.__len__())], \
+                                                                        mode = validModes[currentModeIndex % validModes.__len__()], \
                                                                         stage = currentStage))
 
         currentRound = currentRound + 1
@@ -120,3 +120,4 @@ for teamOne in sampleData:
     for teamTwo in sampleData:
         if teamOne != teamTwo:
             makeMatch('yesElim', sampleData, teamOne, teamTwo, 5)
+            print("\n")
