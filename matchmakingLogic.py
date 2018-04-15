@@ -1,5 +1,7 @@
-from inputParser import *
+from inputParser import parseGoogleFormsCSV
 import json
+import copy
+import csv
 import fileinput
 import random
 import pprint
@@ -92,6 +94,8 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
         currentModeIndex = int(random.uniform(0, validModes.__len__() - 1)) 
 
     # Generate rounds# of stage:mode pairs.
+    setList = ''
+
     currentRound = 0
     currentStage = validStages[0]
     while currentRound < rounds:
@@ -110,20 +114,25 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
             validStages.remove(stage)
         
         # Produce output.
-        print('{teamOne} vs {teamTwo} playing {mode} on {stage}'.format(teamOne = teamOne, \
-                                                                        teamTwo = teamTwo, \
-                                                                        mode = validModes[currentModeIndex % validModes.__len__()], \
-                                                                        stage = currentStage))
-
+        setList = setList + '{mode} on {stage},'.format(mode = validModes[currentModeIndex % validModes.__len__()], \
+                            stage = currentStage)
         currentRound = currentRound + 1
+    return setList[:-1]
 
+with open('tournamentSetlist.csv', 'w+') as csvfile:
+    #setListWriter = csv.writer(csvfile, delimiter=',')
+    sampleData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
+    remainingTeams = copy.deepcopy(list(sampleData.keys()))
 
-sampleData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
+    for teamOne in sampleData:
+        match = teamOne + ','
+        for teamTwo in remainingTeams:
+            if teamOne != teamTwo:
+                match = match + ',' + teamTwo + ',' + makeMatch('yesElim', sampleData, teamOne, teamTwo, 3) + ','
 
-#makeMatch('yesElim', sampleData, "Team Olive", "The binx's", 5)
-
-for teamOne in sampleData:
-    for teamTwo in sampleData:
-        if teamOne != teamTwo:
-            makeMatch('yesElim', sampleData, teamOne, teamTwo, 5)
-            print("\n")
+        csvfile.write(match[:-1] + '\n')
+        try:
+            remainingTeams.remove(teamOne)
+        except:
+            pass
+        print(match)
