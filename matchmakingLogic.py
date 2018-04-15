@@ -91,23 +91,27 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Pick starting point in modes list.
     currentModeIndex = 0
     if validModes.__len__() > 1:
-        currentModeIndex = int(random.uniform(0, validModes.__len__() + 1))
+        currentModeIndex = int(random.uniform(0, validModes.__len__() - 1)) 
 
     # Generate rounds# of stage:mode pairs.
     setList = ''
 
     currentRound = 0
+    currentStage = validStages[0]
     while currentRound < rounds:
         # Iterate the current mode through the list.  Reset pointer if end is reached.
         currentModeIndex = currentModeIndex + 1
 
-        randomStage = int(random.uniform(0, totalStageWeight))
+        randomStage = int(random.uniform(0, totalStageWeight - 1)) # Monitor this line for why residuals can appear.
         for stage in validStages:
             randomStage = randomStage - stageWeighting[stage]
             currentStage = stage
             if randomStage <= 0:
                 validStages.remove(stage)
                 break
+
+        if randomStage > 0:
+            validStages.remove(stage)
         
         # Produce output.
         setList = setList + '{mode} on {stage},'.format(mode = validModes[currentModeIndex % validModes.__len__()], \
