@@ -1,8 +1,10 @@
 from inputParser import *
+import copy
 import json
 import fileinput
 import random
 import pprint
+import sys
 
 def compareTeamPreference(data, field, teamOne, teamTwo):
     return data[teamOne][field] == data[teamTwo][field]
@@ -10,6 +12,7 @@ def compareTeamPreference(data, field, teamOne, teamTwo):
 # Generates a raw weighting value for subsequent transformation based on a 
 # comparison between relevant preferences.
 def rawWeighting(data, field, teamOne, teamTwo):
+    random.seed()
     weight = 0
     for team in [teamOne, teamTwo]:
         if data[team][field] == 'Not preferred':
@@ -40,18 +43,17 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Generate the base list of valid stages, loading from mapsandModes.json and striking listed
     # stages out of toPreferences.json.
     validStages = stagesAndModes['stages']
-    
-    if compareTeamPreference(data, onlySZ, teamOne, teamTwo) and \
-        data[teamOne][onlySZ] == 'Yes':
-        for strike in toPreferences['rules']['bannedStages']:
-            try: # Handle the potential exception for an unlisted stage.
-                validStages.remove(strike)
-            except:
-                pass
+    random.shuffle(validStages)
+    for strike in toPreferences['rules']['bannedStages']:
+        try: # Handle the potential exception for an unlisted stage.
+            validStages.remove(strike)
+        except:
+            pass
 
     # Generate the base list of valid modes, loading from mapsandModes.json and striking listed
     # modes out of toPreferences.json.
     validModes = stagesAndModes['modes']
+    random.shuffle(validModes)
     for strike in toPreferences['rules']['bannedModes']:
         try: # Handle the potential exception for an unlisted mode.
             validModes.remove(strike)
@@ -92,6 +94,8 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
         currentModeIndex = int(random.uniform(0, validModes.__len__() - 1)) 
 
     # Generate rounds# of stage:mode pairs.
+    setList = teamOne + ',' + teamTwo + ','
+
     currentRound = 0
     currentStage = validStages[0]
     while currentRound < rounds:
@@ -102,28 +106,60 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
         for stage in validStages:
             randomStage = randomStage - stageWeighting[stage]
             currentStage = stage
+
+            oldValidStages = copy.deepcopy(validStages)
+            validStages = []
             if randomStage <= 0:
-                validStages.remove(stage)
+                #validStages.remove(stage)
+                for choice in oldValidStages:
+                    if choice != stage:
+                        validStages.append(choice)
                 break
+            validStages = oldValidStages
 
         if randomStage > 0:
-            validStages.remove(stage)
+            validStages.remove(currentStage)
         
         # Produce output.
-        print('{teamOne} vs {teamTwo} playing {mode} on {stage}'.format(teamOne = teamOne, \
-                                                                        teamTwo = teamTwo, \
-                                                                        mode = validModes[currentModeIndex % validModes.__len__()], \
-                                                                        stage = currentStage))
-
+        setList = setList + validModes[currentModeIndex % validModes.__len__()] + ' on ' + currentStage + ','
         currentRound = currentRound + 1
 
+        random.shuffle(validStages)
+    print(setList[:-1])
+    #print('\n')
 
+############################################################################
+sys.stdout = open("c:\\Users\\leech\\Projects\\splatchmaker\\output.csv", "w", encoding='utf-8-sig')
 sampleData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
 
-#makeMatch('yesElim', sampleData, "Team Olive", "The binx's", 5)
+with open('input.csv', 'r', encoding='utf-8-sig') as matchups:
+    matchesRaw = str(matchups.read())
+    matchesRaw = matchesRaw.split("\n")
 
-for teamOne in sampleData:
-    for teamTwo in sampleData:
-        if teamOne != teamTwo:
-            makeMatch('yesElim', sampleData, teamOne, teamTwo, 5)
-            print("\n")
+    for match in matchesRaw:
+        teams = match.split(',')
+
+        if teams.__len__() != 2:
+            break
+
+        makeMatch('yesElim', sampleData, teams[0], teams[1], 9)
+
+#remainingTeams = copy.deepcopy(list(sampleData.keys()))
+
+#for teamOne in list(sampleData.keys()):
+#    for teamTwo in remainingTeams:
+#        if teamOne != teamTwo and teamOne == 'C Sharp':
+#            makeMatch('yesElim', sampleData, teamOne, teamTwo, 9)
+
+            # Without this terrible method of rebuilding remainingTeams, you encounter a bizarre ValueException
+            # x not in list, but *only* for the second team in order of the list cast after the current one.
+#            oldRemainingTeams = copy.deepcopy(remainingTeams)
+#            remainingTeams = []
+#            for team in oldRemainingTeams:
+#                if team != teamOne:
+#                    remainingTeams.append(team)
+            #try:
+                #remainingTeams.remove(teamOne)
+            #except:
+            #    pass
+#    remainingTeams = copy.deepcopy(list(sampleData.keys()))

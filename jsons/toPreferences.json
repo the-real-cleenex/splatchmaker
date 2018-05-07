@@ -7,14 +7,14 @@
             "Turf War"
         ],
         "bannedStages": [
-            "The Reef",
             "Humpback Pump Track",
-            "Sturgeon Shipyard",
-            "Manta Maria",
-            "Kelp Dome",
-            "MakoMart",
-            "Piranha Pit",
-            "Goby Arena"
+            "Goby Arena",
+            "Musselforge Fitness",
+            "Starfish Mainstage",
+            "Inkblot Art Academy",
+            "Shellendorf Institute",
+            "Port Mackerel",
+            "Moray Towers"
         ]
     }
 }
