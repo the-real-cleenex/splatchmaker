@@ -1,3 +1,11 @@
+############################## Module Standards ###############################
+# * The data table will always be the first argument in any function that is  #
+#   using it.                                                                 #
+# * The lookup value or field will always be the second argument in any       #
+#   function using the return value.                                          #
+# * Function modifiers, like elimination mode, are always specified last.     #
+###############################################################################
+
 from inputParser import *
 import copy
 import json
@@ -6,29 +14,48 @@ import random
 import pprint
 import sys
 
+# This is a utility function to determine whether or not two teams share a 
+# given preference, denoted by field.  This is in order to avoid having
+# to fully write out hash lookups repeatedly.
+
 def compareTeamPreference(data, field, teamOne, teamTwo):
     return data[teamOne][field] == data[teamTwo][field]
 
 # Generates a raw weighting value for subsequent transformation based on a 
 # comparison between relevant preferences.
-def rawWeighting(data, field, teamOne, teamTwo):
-    random.seed()
-    weight = 0
+# No Elimination : 2 - 12
+# * 1 : A team does not prefer this map.
+# * 2 : A team is neutral on this map.
+# * 6 : A team prefers this map (3x chance of appearance).
+# 
+# Elimination : 0 - 6
+# * 0 : A team does not prefer this map.
+# * 1 : A team is neutral on this map.
+# * 3 : A team prefers this map.
+
+def combinedFieldWeight(data, field, teamOne, teamTwo, mode):
+    if mode == 'noElim': # Maps cannot be eliminated.
+        notPreferred = 1
+        neutral = 2
+        preferred = 6
+    else: # Maps can be eliminated.
+        notPreferred = 0
+        neutral = 1
+        preferred = 3
+
+    fieldWeight = 0
     for team in [teamOne, teamTwo]:
         if data[team][field] == 'Not preferred':
-            weight = weight + 1
-        elif data[team][field] == 'Preferred':
-            weight = weight + 3
+            fieldWeight = notPreferred + 1
         elif data[team][field] == 'Neutral':
-            weight = weight + 2
-        else: # This weighting is for a mode, not a map.
-            weight = abs(int(data[team][field]) - 6)
-    return weight
-
-def transformWeighting(weightingMode, raw):
-    if weightingMode == 'noElim':
-        return raw + 1
-    return raw
+            fieldWeight = neutral + 2
+        elif data[team][field] == 'Preferred':
+            fieldWeight = preferred + 3
+        # Weights for modes are calculated by inverting the provided
+        # rank out of five, such that 1 = 5 ... 5 = 1.
+        else:
+            fieldWeight = abs(int(data[team][field]) - 6)
+    return fieldWeight
 
 def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Define shorthand strings for looking up specific preferences.
