@@ -42,7 +42,7 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     
     # Generate the base list of valid stages, loading from mapsandModes.json and striking listed
     # stages out of toPreferences.json.
-    validStages = stagesAndModes['stages']
+    validStages = list(stagesAndModes['stages'])
     random.shuffle(validStages)
     for strike in toPreferences['rules']['bannedStages']:
         try: # Handle the potential exception for an unlisted stage.
@@ -52,7 +52,7 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
 
     # Generate the base list of valid modes, loading from mapsandModes.json and striking listed
     # modes out of toPreferences.json.
-    validModes = stagesAndModes['modes']
+    validModes = list(stagesAndModes['modes'])
     random.shuffle(validModes)
     for strike in toPreferences['rules']['bannedModes']:
         try: # Handle the potential exception for an unlisted mode.
