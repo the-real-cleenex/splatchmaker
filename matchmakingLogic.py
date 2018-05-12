@@ -17,7 +17,7 @@ import sys
 # This is a utility function to determine whether or not two teams share a 
 # given preference, denoted by field.  This is in order to avoid having
 # to fully write out hash lookups repeatedly.
-
+    
 def compareTeamPreference(data, field, teamOne, teamTwo):
     return data[teamOne][field] == data[teamTwo][field]
 
@@ -56,6 +56,18 @@ def combinedFieldWeight(data, field, teamOne, teamTwo, mode):
         else:
             fieldWeight = abs(int(data[team][field]) - 6)
     return fieldWeight
+
+# Returns the weight of a subset of elements in a weighted table, provided a
+# list of elements to search.
+
+def getSubsetWeight(weightedTable, subsetList):
+    subsetWeight = 0
+    for item in subsetList:
+        subsetWeight = weightedTable[item] + subsetWeight
+    return subsetWeight
+
+# Generates a weighted table of two teams' stage preferences, given two team
+# names to search.
 
 def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Define shorthand strings for looking up specific preferences.
