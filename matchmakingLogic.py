@@ -6,20 +6,121 @@
 # * Function modifiers, like elimination mode, are always specified last.     #
 ###############################################################################
 
-from inputParser import *
+from inputParser import parseGoogleFormsCSV
 import copy
 import json
 import fileinput
 import random
 import pprint
 import sys
+import time
+from datetime import date
 
+def main():
+    #sys.stdout = open("c:\\Users\\leech\\Projects\\splatchmaker\\output.csv", "w", encoding='utf-8-sig')
+
+    with open('input.csv', 'r', encoding='utf-8-sig') as matchups:
+        matchesRaw = str(matchups.read())
+        matchesRaw = matchesRaw.split("\n")
+
+        for match in matchesRaw:
+            teams = match.split(',')
+
+            if teams.__len__() != 2:
+                break
+
+            makeSetList(teams[0], teams[1], 9)
+    
 # This method is the heart of this module.  Given two teams and parsed data,
 # it prints a .csv set list with matches# of games being played between 
 # teamOne and teamTwo. 
 
-def makeSetList(data, preferences, teamOne, teamTwo, matches):
-    print("hi")
+def makeSetList(teamOne, teamTwo, matches):
+    # Import the relevant JSONs.  
+    stagesAndModes = json.load(open('./jsons/stagesAndModes.json','r'))
+    teamData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
+    toPreferences = json.load(open('./jsons/toPreferences.json','r'))
+
+    # This line is critical, and ensures the consistency of program runs across
+    # different invokations from week to week.
+    random.seed(a=''.join([teamOne,teamTwo,str(getWeekNumber())]))
+
+    # Prepare data structures from the loaded JSONs.
+    stagePreferences = getStagePreferences(stagesAndModes, teamOne, teamTwo)
+    modeRotation = stagesAndModes['modes']
+    random.shuffle(modeRotation)
+
+    # Account for TO preferences.
+    for stage in toPreferences['bannedStages']:
+        del stagePreferences[stage]
+
+    for mode in toPreferences['bannedModes']:
+        modeRotation.remove(mode)
+
+    # Define shorthand strings for looking up specific preferences.
+    yesTW = 'Would you like Turf War to be included in your map lists along other modes?'
+    onlySZ = 'Do you prefer to play Splat Zones only?'
+    modeStrike = 'Strike a ranked mode (optional)'
+
+    # Account for team preferences.
+    if teamData[teamOne][yesTW] == 'Yes' and \
+       compareTeamPreference(teamData, yesTW, teamOne, teamTwo):
+       modeRotation.append('Turf War')
+       random.shuffle(modeRotation) # Reshuffle so that turf war is not always
+                                    # in the same position.
+
+    # Account for team mode strikes.
+    modeStrikes = {}
+    if teamData[teamOne][onlySZ] == 'Yes' and \
+       compareTeamPreference(teamData, onlySZ, teamOne, teamTwo):
+       
+       modeRotation = ['Splat Zones']
+    else:
+        for team in [teamOne, teamTwo]:
+            struckMode = teamData[team][modeStrike]
+            if len(struckMode) == 0: # No preference for a struck mode.
+                break
+            elif struckMode in modeStrikes: # Both teams have stricken this mode.
+                modeStrikes[struckMode] = 2
+            else: # One team has struck this mode.
+                modeStrikes[struckMode] = 1
+
+    # Iterate through the match generation procedure for the given number of
+    # matches in this set.
+    match = 0
+    modeIndex = 0
+    while match < matches:
+        mode = modeRotation[modeIndex]
+        while mode in modeStrikes: # The current mode has been stricken by at
+                                   # least one team.  This is in a while loop
+                                   # because it is possible that randomization
+                                   # will produce two adjacent struck modes.
+            if modeStrikes[mode] == 0: # Prime the strike for the next go.
+                modeStrikes[mode] = 1
+
+            elif modeStrikes[mode] == 1: # Advance the index by one, then put
+                                        # the strike on cooldown.
+                modeIndex += 1
+                modeStrikes[mode] = 0
+
+            elif modeStrikes[mode] == 2: # Automatically strike this mode.
+                modeRotation += 1
+
+            if modeIndex == len(modeRotation):
+                modeIndex = 0
+            mode = modeRotation[modeIndex]
+
+            # # # # Left off point.  Get the subset of stage prefs from toPreferences[rotation][mode], pick a random from there.
+        # Iterator.
+        match = match + 1
+
+    print(modeRotation)
+
+    
+# Utility function to get the current week number.
+
+def getWeekNumber():
+    return date.today().isocalendar()[1]
 
 # This is a utility function to determine whether or not two teams share a 
 # given preference, denoted by field.  This is in order to avoid having
@@ -64,11 +165,11 @@ def combinedFieldWeight(data, field, teamOne, teamTwo, mode):
     fieldWeight = 0
     for team in [teamOne, teamTwo]:
         if data[team][field] == 'Not preferred':
-            fieldWeight = notPreferred + 1
+            fieldWeight += notPreferred
         elif data[team][field] == 'Neutral':
-            fieldWeight = neutral + 2
+            fieldWeight += neutral
         elif data[team][field] == 'Preferred':
-            fieldWeight = preferred + 3
+            fieldWeight += preferred
         # Weights for modes are calculated by inverting the provided
         # rank out of five, such that 1 = 5 ... 5 = 1.
         else:
@@ -114,11 +215,8 @@ def getRandomFromWeightedTable(weightedTable, prior=None):
     return randomChoice # This is in the event that the end of the list is
                         # reached as a safety catch    
 
-def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
-    # Define shorthand strings for looking up specific preferences.
-    yesTW = 'Would you like Turf War to be included in your map lists along other modes?'
-    onlySZ = 'Do you prefer to play Splat Zones only?'
-    modeStrike = 'Strike a ranked mode (optional)'
+def makeMatchOld(weightingMode, data, teamOne, teamTwo, rounds):
+    
 
     # Load relevant JSON data.
     stagesAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
@@ -212,21 +310,11 @@ def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     print(setList[:-1])
     #print('\n')
 
+
+main()
+
 ############################################################################
-sys.stdout = open("c:\\Users\\leech\\Projects\\splatchmaker\\output.csv", "w", encoding='utf-8-sig')
-sampleData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
 
-with open('input.csv', 'r', encoding='utf-8-sig') as matchups:
-    matchesRaw = str(matchups.read())
-    matchesRaw = matchesRaw.split("\n")
-
-    for match in matchesRaw:
-        teams = match.split(',')
-
-        if teams.__len__() != 2:
-            break
-
-        makeMatch('yesElim', sampleData, teams[0], teams[1], 9)
 
 #remainingTeams = copy.deepcopy(list(sampleData.keys()))
 
