@@ -14,6 +14,13 @@ import random
 import pprint
 import sys
 
+# This method is the heart of this module.  Given two teams and parsed data,
+# it prints a .csv set list with matches# of games being played between 
+# teamOne and teamTwo. 
+
+def makeSetList(data, preferences, teamOne, teamTwo, matches):
+    print("hi")
+
 # This is a utility function to determine whether or not two teams share a 
 # given preference, denoted by field.  This is in order to avoid having
 # to fully write out hash lookups repeatedly.
@@ -21,8 +28,19 @@ import sys
 def compareTeamPreference(data, field, teamOne, teamTwo):
     return data[teamOne][field] == data[teamTwo][field]
 
-# Generates a raw weighting value for subsequent transformation based on a 
-# comparison between relevant preferences.
+# Generates a weighted table of two teams' stage preferences, given two team
+# names to search and a hashtable of preferences.
+#
+# To-Do:
+# * Consider using global variables.
+
+def getStagePreferences(data, teamOne, teamTwo):
+    preferenceTable = {}
+    for stage in data['stages']:
+            preferenceTable[stage] = combinedFieldWeight(data, stage, teamOne, teamTwo, 'noElim')
+    return preferenceTable
+
+# Generates a weight based oncomparison between relevant preferences.
 # No Elimination : 2 - 12
 # * 1 : A team does not prefer this map.
 # * 2 : A team is neutral on this map.
@@ -57,17 +75,44 @@ def combinedFieldWeight(data, field, teamOne, teamTwo, mode):
             fieldWeight = abs(int(data[team][field]) - 6)
     return fieldWeight
 
-# Returns the weight of a subset of elements in a weighted table, provided a
-# list of elements to search.
+# Returns the weight of a subset of elements in a weighted table.
 
-def getSubsetWeight(weightedTable, subsetList):
-    subsetWeight = 0
+def getTableWeight(weightedTable):
+    tableWeight = 0
+    for value, weight in weightedTable.items():
+        tableWeight = tableWeight + weight
+    return 
+    
+# Returns a subtable of a table of values, containing all of the keys in a
+# provided list of keys.
+
+def getSubTable(table, subsetList):
+    subTable = {}
     for item in subsetList:
-        subsetWeight = weightedTable[item] + subsetWeight
-    return subsetWeight
+        subTable[item] = table[item]
+    return subTable
 
-# Generates a weighted table of two teams' stage preferences, given two team
-# names to search.
+# Returns a random element from a weighted table.  A random integer is
+# generated from [0, getTableWEight(weightedTable)).  Going from the first
+# element returned by an iterator (order is not guaranteed to be consistent),
+# subtract the weight from the randomized choice value until the value is at or
+# below zero, then return the current selected item.  An optional argument
+# (prior) precludes matching table entries from being selected.
+#
+# To-Do:
+# * Check to see whether random.seed generates a consistent order for the order
+#   of items returned by iterating over the result of hashtable.items().  Looks
+#   like this is desired, but not guaranteed behavior at present.
+
+def getRandomFromWeightedTable(weightedTable, prior=None):
+    choice = random.uniform(0, getTableWeight(weightedTable))
+    for value, weight in weightedTable.items():
+        randomChoice = value
+        choice = choice - weight
+        if choice <= 0 and randomChoice != prior:
+            return randomChoice
+    return randomChoice # This is in the event that the end of the list is
+                        # reached as a safety catch    
 
 def makeMatch(weightingMode, data, teamOne, teamTwo, rounds):
     # Define shorthand strings for looking up specific preferences.

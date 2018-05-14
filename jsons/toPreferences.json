@@ -1,20 +1,56 @@
 {
     "metadata" : {
-        "tournamentID" : "vanishingcrutchs1"
+        "tournamentID" : "Sendou's Ladder W3"
     },
     "rules": {
+        "eliminationMode" : [
+        ],
         "bannedModes": [
             "Turf War"
         ],
         "bannedStages": [
-            "Humpback Pump Track",
-            "Goby Arena",
-            "Musselforge Fitness",
-            "Starfish Mainstage",
-            "Inkblot Art Academy",
-            "Shellendorf Institute",
-            "Port Mackerel",
-            "Moray Towers"
-        ]
+        ],
+		"rotation": {
+		    	"Splat Zones": [
+                    "The Reef",
+                    "Humpback Pump Track",
+                    "Inkblot Art Academy",
+                    "MakoMart",
+                    "Walleye Warehouse",
+                    "Goby Arena",
+                    "Pirahana Pit",
+                    "Camp Triggerfish"
+                ],
+                "Tower Control": [
+                    "The Reef",
+                    "Humpback Pump Track",
+                    "Sturgeon Shipyard",
+                    "Manta Maria",
+                    "Kelp Dome",
+                    "Snapper Canal",
+                    "Arowana Mall",
+                    "Camp Triggerfish"
+                ],
+                "Rainmaker": [
+                    "Sturgeon Shipyard",
+                    "Moray Towers",
+                    "Port Mackerel",
+                    "Manta Maria",
+                    "Kelp Dome",
+                    "MakoMart",
+                    "Shellendorf INstitute",
+                    "Camp Triggerfish"
+                ],
+                "Clam Blitz": [
+                    "Musselforge Fitness",
+                    "Starfish Mainstage",
+                    "Inkblot Art Academy",
+                    "Snapper Canal",
+                    "Blackbelly Skatepark",
+                    "Arowana Mall",
+                    "Pirahana Pit",
+                    "Camp Triggerfish"
+                ]
+        }
     }
 }
