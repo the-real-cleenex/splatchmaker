@@ -46,15 +46,16 @@ def makeSetList(teamOne, teamTwo, matches):
     random.seed(a=''.join([teamOne,teamTwo,str(getWeekNumber())]))
 
     # Prepare data structures from the loaded JSONs.
-    stagePreferences = getStagePreferences(stagesAndModes, teamOne, teamTwo)
+    stagePreferences = getStagePreferences(stagesAndModes, teamData, \
+                                           teamOne, teamTwo)
     modeRotation = stagesAndModes['modes']
     random.shuffle(modeRotation)
 
     # Account for TO preferences.
-    for stage in toPreferences['bannedStages']:
+    for stage in toPreferences['rules']['bannedStages']:
         del stagePreferences[stage]
 
-    for mode in toPreferences['bannedModes']:
+    for mode in toPreferences['rules']['bannedModes']:
         modeRotation.remove(mode)
 
     # Define shorthand strings for looking up specific preferences.
@@ -72,9 +73,8 @@ def makeSetList(teamOne, teamTwo, matches):
     # Account for team mode strikes.
     modeStrikes = {}
     if teamData[teamOne][onlySZ] == 'Yes' and \
-       compareTeamPreference(teamData, onlySZ, teamOne, teamTwo):
-       
-       modeRotation = ['Splat Zones']
+        compareTeamPreference(teamData, onlySZ, teamOne, teamTwo):
+        modeRotation = ['Splat Zones']
     else:
         for team in [teamOne, teamTwo]:
             struckMode = teamData[team][modeStrike]
@@ -89,29 +89,47 @@ def makeSetList(teamOne, teamTwo, matches):
     # matches in this set.
     match = 0
     modeIndex = 0
+    priorStage = None
+    stage = "Error"
+    
     while match < matches:
+        if modeIndex == len(modeRotation):
+            modeIndex = 0
         mode = modeRotation[modeIndex]
+        
         while mode in modeStrikes: # The current mode has been stricken by at
                                    # least one team.  This is in a while loop
                                    # because it is possible that randomization
                                    # will produce two adjacent struck modes.
             if modeStrikes[mode] == 0: # Prime the strike for the next go.
                 modeStrikes[mode] = 1
-
+                break
             elif modeStrikes[mode] == 1: # Advance the index by one, then put
                                         # the strike on cooldown.
                 modeIndex += 1
                 modeStrikes[mode] = 0
-
+                mode = modeRotation[modeIndex]
             elif modeStrikes[mode] == 2: # Automatically strike this mode.
-                modeRotation += 1
-
+                modeIndex += 1
+                
             if modeIndex == len(modeRotation):
                 modeIndex = 0
             mode = modeRotation[modeIndex]
 
-            # # # # Left off point.  Get the subset of stage prefs from toPreferences[rotation][mode], pick a random from there.
+        # Retrieve the subtable corresponding to the weighted preferences
+        # for maps in rotation.
+        rotationStagePreferences = getSubTable(stagePreferences, \
+                                                toPreferences['rules']['rotation'][mode])
+        stage = getRandomFromWeightedTable(rotationStagePreferences, \
+                                            priorStage)
+        priorStage = stage
+
+        toPreferences['rules']['rotation'][mode].remove(stage)
+
         # Iterator.
+        print(teamOne+' vs. '+teamTwo+' (Match '+str(match+1)+'): '+mode+' on '+stage)
+
+        modeIndex += 1
         match = match + 1
 
     print(modeRotation)
@@ -135,10 +153,10 @@ def compareTeamPreference(data, field, teamOne, teamTwo):
 # To-Do:
 # * Consider using global variables.
 
-def getStagePreferences(data, teamOne, teamTwo):
+def getStagePreferences(data, teamData, teamOne, teamTwo):
     preferenceTable = {}
     for stage in data['stages']:
-            preferenceTable[stage] = combinedFieldWeight(data, stage, teamOne, teamTwo, 'noElim')
+            preferenceTable[stage] = combinedFieldWeight(teamData, stage, teamOne, teamTwo, 'noElim')
     return preferenceTable
 
 # Generates a weight based oncomparison between relevant preferences.
@@ -182,7 +200,7 @@ def getTableWeight(weightedTable):
     tableWeight = 0
     for value, weight in weightedTable.items():
         tableWeight = tableWeight + weight
-    return 
+    return tableWeight
     
 # Returns a subtable of a table of values, containing all of the keys in a
 # provided list of keys.
@@ -214,102 +232,6 @@ def getRandomFromWeightedTable(weightedTable, prior=None):
             return randomChoice
     return randomChoice # This is in the event that the end of the list is
                         # reached as a safety catch    
-
-def makeMatchOld(weightingMode, data, teamOne, teamTwo, rounds):
-    
-
-    # Load relevant JSON data.
-    stagesAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
-    toPreferences = json.load(open('./jsons/toPreferences.json','r'))
-    
-    # Generate the base list of valid stages, loading from mapsandModes.json and striking listed
-    # stages out of toPreferences.json.
-    validStages = stagesAndModes['stages']
-    random.shuffle(validStages)
-    for strike in toPreferences['rules']['bannedStages']:
-        try: # Handle the potential exception for an unlisted stage.
-            validStages.remove(strike)
-        except:
-            pass
-
-    # Generate the base list of valid modes, loading from mapsandModes.json and striking listed
-    # modes out of toPreferences.json.
-    validModes = stagesAndModes['modes']
-    random.shuffle(validModes)
-    for strike in toPreferences['rules']['bannedModes']:
-        try: # Handle the potential exception for an unlisted mode.
-            validModes.remove(strike)
-        except:
-            pass
-    
-    # Handle team mode strikes.
-    try:
-        validModes.remove(data[teamOne][modeStrike])
-    except:
-        pass
-    try:
-        validModes.remove(data[teamTwo][modeStrike])
-    except:
-        pass
-
-    # Handle mode-specific survey questions.
-    if compareTeamPreference(data, onlySZ, teamOne, teamTwo) and \
-        data[teamOne][onlySZ] == 'Yes':
-        validModes = ['Splat Zones']
-
-    if compareTeamPreference(data, yesTW, teamOne, teamTwo) and \
-        data[teamOne][yesTW] == 'Yes':
-        validModes.append('Turf War')
-
-    # Generate weighting list for stages.
-    stageWeighting = {}
-    totalStageWeight = 0
-    for stage in validStages:
-        stageWeight = transformWeighting(weightingMode , \
-                        rawWeighting(data, stage, teamOne, teamTwo))
-        stageWeighting[stage] = stageWeight
-        totalStageWeight = totalStageWeight + stageWeight
-
-    # Pick starting point in modes list.
-    currentModeIndex = 0
-    if validModes.__len__() > 1:
-        currentModeIndex = int(random.uniform(0, validModes.__len__() - 1)) 
-
-    # Generate rounds# of stage:mode pairs.
-    setList = teamOne + ',' + teamTwo + ','
-
-    currentRound = 0
-    currentStage = validStages[0]
-    while currentRound < rounds:
-        # Iterate the current mode through the list.  Reset pointer if end is reached.
-        currentModeIndex = currentModeIndex + 1
-
-        randomStage = int(random.uniform(0, totalStageWeight - 1)) # Monitor this line for why residuals can appear.
-        for stage in validStages:
-            randomStage = randomStage - stageWeighting[stage]
-            currentStage = stage
-
-            oldValidStages = copy.deepcopy(validStages)
-            validStages = []
-            if randomStage <= 0:
-                #validStages.remove(stage)
-                for choice in oldValidStages:
-                    if choice != stage:
-                        validStages.append(choice)
-                break
-            validStages = oldValidStages
-
-        if randomStage > 0:
-            validStages.remove(currentStage)
-        
-        # Produce output.
-        setList = setList + validModes[currentModeIndex % validModes.__len__()] + ' on ' + currentStage + ','
-        currentRound = currentRound + 1
-
-        random.shuffle(validStages)
-    print(setList[:-1])
-    #print('\n')
-
 
 main()
 
