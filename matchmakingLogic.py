@@ -17,7 +17,7 @@ import time
 from datetime import date
 
 def main():
-    #sys.stdout = open("c:\\Users\\leech\\Projects\\splatchmaker\\output.csv", "w", encoding='utf-8-sig')
+    sys.stdout = open("c:\\Users\\leech\\Projects\\splatchmaker\\output.csv", "w", encoding='utf-8-sig')
 
     with open('input.csv', 'r', encoding='utf-8-sig') as matchups:
         matchesRaw = str(matchups.read())
@@ -43,7 +43,7 @@ def makeSetList(teamOne, teamTwo, matches):
 
     # This line is critical, and ensures the consistency of program runs across
     # different invokations from week to week.
-    random.seed(a=''.join([teamOne,teamTwo,str(getWeekNumber())]))
+    random.seed(a=''.join([teamOne, teamTwo, str(getWeekNumber())]))
 
     # Prepare data structures from the loaded JSONs.
     stagePreferences = getStagePreferences(stagesAndModes, teamData, \
@@ -63,14 +63,22 @@ def makeSetList(teamOne, teamTwo, matches):
     onlySZ = 'Do you prefer to play Splat Zones only?'
     modeStrike = 'Strike a ranked mode (optional)'
 
-    # Account for team preferences.
+    # Account for turf war preferences.
     if teamData[teamOne][yesTW] == 'Yes' and \
        compareTeamPreference(teamData, yesTW, teamOne, teamTwo):
        modeRotation.append('Turf War')
+       toPreferences['rules']['rotation']['Turf War'] = stagesAndModes['stages'] # Turf War encompasses all possible stages.
        random.shuffle(modeRotation) # Reshuffle so that turf war is not always
                                     # in the same position.
 
-    # Account for team mode strikes.
+    # Account for team mode strikes.  The values indicated below signify:
+    # * 0 : One team has struck this mode, but the strike is on cooldown.  This
+    #       means that the next time the mode is encountered, it will be played
+    #       that match, but the next occurrence will be skipped.
+    # * 1 : One team has struck this mode, and the strike is primed.  This mode
+    #       will be struck for this match, and the strike will be placed on
+    #       cooldown (it will be played the next time it appears).
+    # * 2 : Both teams have struck this mode, and it will not be played at all.
     modeStrikes = {}
     if teamData[teamOne][onlySZ] == 'Yes' and \
         compareTeamPreference(teamData, onlySZ, teamOne, teamTwo):
@@ -85,56 +93,71 @@ def makeSetList(teamOne, teamTwo, matches):
             else: # One team has struck this mode.
                 modeStrikes[struckMode] = 1
 
-    # Iterate through the match generation procedure for the given number of
-    # matches in this set.
+    # Iteration variable setup.
     match = 0
     modeIndex = 0
     priorStage = None
-    stage = "Error"
+    setList = teamOne+','+teamTwo+','
     
+    # Iterate through the match generation procedure for the given number of
+    # matches in this set.
     while match < matches:
-        if modeIndex == len(modeRotation):
+        if modeIndex == len(modeRotation): # Reset index if it reaches the end
+                                           # of the available modes.
             modeIndex = 0
-        mode = modeRotation[modeIndex]
-        
+        mode = modeRotation[modeIndex] # Naive mode selection.  Used either as
+                                       # final selection, or to check against
+                                       # mode strikes.
+
         while mode in modeStrikes: # The current mode has been stricken by at
                                    # least one team.  This is in a while loop
                                    # because it is possible that randomization
                                    # will produce two adjacent struck modes.
-            if modeStrikes[mode] == 0: # Prime the strike for the next go.
+            if modeStrikes[mode] == 0: # Prime the strike for use in the next
+                                       # match.
                 modeStrikes[mode] = 1
                 break
-            elif modeStrikes[mode] == 1: # Advance the index by one, then put
-                                        # the strike on cooldown.
+            elif modeStrikes[mode] == 1: # Skip the current mode for this match
+                                         # and place the strike on cooldown.
                 modeIndex += 1
                 modeStrikes[mode] = 0
-                mode = modeRotation[modeIndex]
-            elif modeStrikes[mode] == 2: # Automatically strike this mode.
+            elif modeStrikes[mode] == 2: # Modes that both teams have struck
+                                         # are automatically stricken.
                 modeIndex += 1
                 
-            if modeIndex == len(modeRotation):
+            if modeIndex == len(modeRotation): # Reset index if it reaches the
+                                               # end of available modes.
                 modeIndex = 0
-            mode = modeRotation[modeIndex]
+            mode = modeRotation[modeIndex] # Naive mode selection.  If still in
+                                           # the strike list, it will be 
+                                           # checked on the next iteration.
 
-        # Retrieve the subtable corresponding to the weighted preferences
-        # for maps in rotation.
+        # Retrieve the subtable corresponding to the weighted preferences for
+        # maps in rotation.  Select a stage from the returned subtable, then
+        # note the selection as a prior stage.
         rotationStagePreferences = getSubTable(stagePreferences, \
-                                                toPreferences['rules']['rotation'][mode])
+                                               toPreferences['rules']['rotation'][mode])
         stage = getRandomFromWeightedTable(rotationStagePreferences, \
                                             priorStage)
-        priorStage = stage
-
+        priorStage = stage # A change has been made to prevent all duplicate stages.
         toPreferences['rules']['rotation'][mode].remove(stage)
 
-        # Iterator.
-        print(teamOne+' vs. '+teamTwo+' (Match '+str(match+1)+'): '+mode+' on '+stage)
+        # Produce output to the console or output.csv.
+        setList += mode+' on '+stage+','
 
-        modeIndex += 1
+        # Proceed to the next iteration.
+        modeIndex += 1 # List boundary check is conducted at the top of loop.
         match = match + 1
-
-    print(modeRotation)
-
     
+    print(setList[:-1])
+
+# Emergency reload function in the event of too many collisions.
+
+def emergencyModeReload(dataToReload, mode):
+    toPreferences = json.load(open('./jsons/toPreferences.json','r'))
+    dataToReload['rules']['rotation'][mode] = toPreferences['rules']['rotation'][mode]
+    return dataToReload
+
 # Utility function to get the current week number.
 
 def getWeekNumber():
