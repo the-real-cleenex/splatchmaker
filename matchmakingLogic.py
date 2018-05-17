@@ -38,7 +38,7 @@ def main():
 def makeSetList(teamOne, teamTwo, matches):
     # Import the relevant JSONs.  
     stagesAndModes = json.load(open('./jsons/stagesAndModes.json','r'))
-    teamData = parseGoogleFormsCSV("Sendou's tournaments map & mode query.csv")
+    teamData = parseGoogleFormsCSV("preferences.csv")
     toPreferences = json.load(open('./jsons/toPreferences.json','r'))
 
     # This line is critical, and ensures the consistency of program runs across
@@ -137,13 +137,24 @@ def makeSetList(teamOne, teamTwo, matches):
         # note the selection as a prior stage.
         rotationStagePreferences = getSubTable(stagePreferences, \
                                                toPreferences['rules']['rotation'][mode])
+        # Handle the worst-case scenario where all selections for a mode are
+        # consumed by other modes.  Refreshes the map pool for that mode only.
+        if len(rotationStagePreferences) == 0:
+            toPreferences['rules']['rotation'][mode] = emergencyModeReload(mode)
+            rotationStagePreferences = getSubTable(stagePreferences, \
+                                                   toPreferences['rules']['rotation'][mode])
+
         stage = getRandomFromWeightedTable(rotationStagePreferences, \
                                             priorStage)
         priorStage = stage # A change has been made to prevent all duplicate stages.
-        toPreferences['rules']['rotation'][mode].remove(stage)
+        for targetMode in modeRotation:
+            try:
+                toPreferences['rules']['rotation'][targetMode].remove(stage)
+            except:
+                pass
 
         # Produce output to the console or output.csv.
-        setList += mode+' on '+stage+','
+        setList += mode +' on '+stage+','
 
         # Proceed to the next iteration.
         modeIndex += 1 # List boundary check is conducted at the top of loop.
@@ -153,10 +164,9 @@ def makeSetList(teamOne, teamTwo, matches):
 
 # Emergency reload function in the event of too many collisions.
 
-def emergencyModeReload(dataToReload, mode):
+def emergencyModeReload(mode):
     toPreferences = json.load(open('./jsons/toPreferences.json','r'))
-    dataToReload['rules']['rotation'][mode] = toPreferences['rules']['rotation'][mode]
-    return dataToReload
+    return toPreferences['rules']['rotation'][mode]
 
 # Utility function to get the current week number.
 
@@ -257,26 +267,3 @@ def getRandomFromWeightedTable(weightedTable, prior=None):
                         # reached as a safety catch    
 
 main()
-
-############################################################################
-
-
-#remainingTeams = copy.deepcopy(list(sampleData.keys()))
-
-#for teamOne in list(sampleData.keys()):
-#    for teamTwo in remainingTeams:
-#        if teamOne != teamTwo and teamOne == 'C Sharp':
-#            makeMatch('yesElim', sampleData, teamOne, teamTwo, 9)
-
-            # Without this terrible method of rebuilding remainingTeams, you encounter a bizarre ValueException
-            # x not in list, but *only* for the second team in order of the list cast after the current one.
-#            oldRemainingTeams = copy.deepcopy(remainingTeams)
-#            remainingTeams = []
-#            for team in oldRemainingTeams:
-#                if team != teamOne:
-#                    remainingTeams.append(team)
-            #try:
-                #remainingTeams.remove(teamOne)
-            #except:
-            #    pass
-#    remainingTeams = copy.deepcopy(list(sampleData.keys()))
