@@ -12,44 +12,44 @@
         ],
 		"rotation": {
 		    	"Splat Zones": [
-                    "The Reef",
-                    "Humpback Pump Track",
-                    "Inkblot Art Academy",
-                    "MakoMart",
-                    "Walleye Warehouse",
-                    "Goby Arena",
-                    "Piranha Pit",
-                    "Camp Triggerfish"
-                ],
-                "Tower Control": [
-                    "The Reef",
-                    "Humpback Pump Track",
-                    "Sturgeon Shipyard",
-                    "Manta Maria",
-                    "Kelp Dome",
-                    "Snapper Canal",
-                    "Arowana Mall",
-                    "Camp Triggerfish"
-                ],
-                "Rainmaker": [
-                    "Sturgeon Shipyard",
-                    "Moray Towers",
-                    "Port Mackerel",
-                    "Manta Maria",
-                    "Kelp Dome",
-                    "MakoMart",
-                    "Shellendorf Institute",
-                    "Camp Triggerfish"
-                ],
-                "Clam Blitz": [
-                    "Musselforge Fitness",
                     "Starfish Mainstage",
                     "Inkblot Art Academy",
+                    "Sturgeon Shipyard",
+                    "Port Mackerel",
+                    "Manta Maria",
                     "Snapper Canal",
+                    "Shellendorf Institute",
+                    "Wahoo World"
+                ],
+                "Tower Control": [
+                    "Inkblot Art Academy",
+                    "Moray Towers",
                     "Blackbelly Skatepark",
-                    "Arowana Mall",
+                    "MakoMart",
+                    "Goby Arena",
                     "Piranha Pit",
-                    "Camp Triggerfish"
+                    "Camp Triggerfish",
+                    "Wahoo World"
+                ],
+                "Rainmaker": [
+                    "The Reef",
+                    "Musselforge Fitness",
+                    "Snapper Canal",
+                    "Walleye Warehouse",
+                    "Arowana Mall",
+                    "Goby Arena",
+                    "Camp Triggerfish",
+                    "Wahoo World"
+                ],
+                "Clam Blitz": [
+                    "Humpback Pump Track",
+                    "Sturgeon Shipyard",
+                    "Manta Maria",
+                    "Kelp Dome",
+                    "MakoMart",
+                    "Walleye Warehouse",
+                    "Piranha Pit",
+                    "Wahoo World"
                 ]
         }
     }

@@ -19,16 +19,28 @@ from datetime import date
 def main():
     sys.stdout = open("c:\\Users\\leech\\Projects\\splatchmaker\\output.csv", "w", encoding='utf-8-sig')
 
+    teamListWithExtras = parseGoogleFormsCSV("preferences.csv")
+    teamList = list(teamListWithExtras.keys())
+    prunedList = copy.deepcopy(teamList)
+
+    # Use this code to generate all permutations of possible matches.
+    #for teamOne in teamList:
+    #    for teamTwo in prunedList:
+    #        if teamOne != teamTwo:
+    #            makeSetList(teamOne, teamTwo, 9)
+    #    prunedList.remove(teamOne)
+
+
     with open('input.csv', 'r', encoding='utf-8-sig') as matchups:
         matchesRaw = str(matchups.read())
         matchesRaw = matchesRaw.split("\n")
 
         for match in matchesRaw:
             teams = match.split(',')
-
+        
             if teams.__len__() != 2:
                 break
-
+        
             makeSetList(teams[0], teams[1], 9)
     
 # This method is the heart of this module.  Given two teams and parsed data,
@@ -40,6 +52,11 @@ def makeSetList(teamOne, teamTwo, matches):
     stagesAndModes = json.load(open('./jsons/stagesAndModes.json','r'))
     teamData = parseGoogleFormsCSV("preferences.csv")
     toPreferences = json.load(open('./jsons/toPreferences.json','r'))
+
+    # Generate blank entries if a team did not submit a splatchmaker form.
+    for team in [teamOne, teamTwo]:
+        if team not in teamData:
+            teamData = makeBlankEntry(teamData, stagesAndModes, team)
 
     # This line is critical, and ensures the consistency of program runs across
     # different invokations from week to week.
@@ -87,7 +104,7 @@ def makeSetList(teamOne, teamTwo, matches):
         for team in [teamOne, teamTwo]:
             struckMode = teamData[team][modeStrike]
             if len(struckMode) == 0: # No preference for a struck mode.
-                break
+                pass
             elif struckMode in modeStrikes: # Both teams have stricken this mode.
                 modeStrikes[struckMode] = 2
             else: # One team has struck this mode.
@@ -167,6 +184,25 @@ def makeSetList(teamOne, teamTwo, matches):
 def emergencyModeReload(mode):
     toPreferences = json.load(open('./jsons/toPreferences.json','r'))
     return toPreferences['rules']['rotation'][mode]
+
+# Add a blank team entry to provided preference data when a form is not 
+# provided.
+
+def makeBlankEntry(teamData, stagesAndModes, team):
+    yesTW = 'Would you like Turf War to be included in your map lists along other modes?'
+    onlySZ = 'Do you prefer to play Splat Zones only?'
+    modeStrike = 'Strike a ranked mode (optional)'
+    
+    teamData[team] = {}
+    teamData[team][yesTW] = 'No'
+    teamData[team][onlySZ] = 'No'
+    teamData[team][modeStrike] = ''
+
+    for stage in stagesAndModes['stages']:
+        teamData[team][stage] = 'Neutral'
+    
+    return teamData
+    
 
 # Utility function to get the current week number.
 
