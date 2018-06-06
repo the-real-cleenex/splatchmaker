@@ -1,12 +1,60 @@
 {
     "metadata" : {
-        "tournamentID" : "vanishingcrutchs1"
+        "tournamentID" : "Sendou's Ladder W3"
     },
     "rules": {
+        "eliminationMode" : [
+        ],
         "bannedModes": [
             "Turf War"
         ],
         "bannedStages": [
+<<<<<<< HEAD
         ]
+=======
+        ],
+		"rotation": {
+		    	"Splat Zones": [
+                    "Starfish Mainstage",
+                    "Inkblot Art Academy",
+                    "Sturgeon Shipyard",
+                    "Port Mackerel",
+                    "Manta Maria",
+                    "Snapper Canal",
+                    "Shellendorf Institute",
+                    "Wahoo World"
+                ],
+                "Tower Control": [
+                    "Inkblot Art Academy",
+                    "Moray Towers",
+                    "Blackbelly Skatepark",
+                    "MakoMart",
+                    "Goby Arena",
+                    "Piranha Pit",
+                    "Camp Triggerfish",
+                    "Wahoo World"
+                ],
+                "Rainmaker": [
+                    "The Reef",
+                    "Musselforge Fitness",
+                    "Snapper Canal",
+                    "Walleye Warehouse",
+                    "Arowana Mall",
+                    "Goby Arena",
+                    "Camp Triggerfish",
+                    "Wahoo World"
+                ],
+                "Clam Blitz": [
+                    "Humpback Pump Track",
+                    "Sturgeon Shipyard",
+                    "Manta Maria",
+                    "Kelp Dome",
+                    "MakoMart",
+                    "Walleye Warehouse",
+                    "Piranha Pit",
+                    "Wahoo World"
+                ]
+        }
+>>>>>>> fullRewrite
     }
 }
