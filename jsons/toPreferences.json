@@ -9,52 +9,48 @@
             "Turf War"
         ],
         "bannedStages": [
-<<<<<<< HEAD
-        ]
-=======
         ],
 		"rotation": {
 		    	"Splat Zones": [
+                    "The Reef",
                     "Starfish Mainstage",
                     "Inkblot Art Academy",
-                    "Sturgeon Shipyard",
                     "Port Mackerel",
-                    "Manta Maria",
-                    "Snapper Canal",
-                    "Shellendorf Institute",
-                    "Wahoo World"
+                    "Moray Towers",
+                    "MakoMart",
+                    "Arowana Mall",
+                    "Ancho-V Games"
                 ],
                 "Tower Control": [
-                    "Inkblot Art Academy",
-                    "Moray Towers",
+                    "Wahoo World",
+                    "Starfish Mainstage",
+                    "Sturgeon Shipyard",
+                    "Humpback Pump Track",
+                    "Kelp Dome",
                     "Blackbelly Skatepark",
-                    "MakoMart",
                     "Goby Arena",
-                    "Piranha Pit",
-                    "Camp Triggerfish",
-                    "Wahoo World"
+                    "Ancho-V Games"
                 ],
                 "Rainmaker": [
-                    "The Reef",
-                    "Musselforge Fitness",
-                    "Snapper Canal",
-                    "Walleye Warehouse",
-                    "Arowana Mall",
-                    "Goby Arena",
-                    "Camp Triggerfish",
-                    "Wahoo World"
-                ],
-                "Clam Blitz": [
-                    "Humpback Pump Track",
+                    "Starfish Mainstage",
                     "Sturgeon Shipyard",
+                    "Inkblot Art Academy",
                     "Manta Maria",
+                    "Snapper Canal",
                     "Kelp Dome",
                     "MakoMart",
+                    "Piranha Pit"
+                ],
+                "Clam Blitz": [
+                    "Wahoo World",
+                    "Musselforge Fitness",
+                    "Starfish Mainstage",
+                    "Snapper Canal",
+                    "Shellendorf Institute",
                     "Walleye Warehouse",
-                    "Piranha Pit",
-                    "Wahoo World"
+                    "Camp Triggerfish",
+                    "New Albacore Hotel"
                 ]
         }
->>>>>>> fullRewrite
     }
 }

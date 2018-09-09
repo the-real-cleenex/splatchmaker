@@ -17,7 +17,7 @@ import time
 from datetime import date
 
 def main():
-    sys.stdout = open("c:\\Users\\leech\\Projects\\splatchmaker\\output.csv", "w", encoding='utf-8-sig')
+    sys.stdout = open("output.csv", "w", encoding='utf-8-sig')
 
     teamListWithExtras = parseGoogleFormsCSV("preferences.csv")
     teamList = list(teamListWithExtras.keys())
@@ -80,31 +80,6 @@ def makeSetList(teamOne, teamTwo, matches):
     onlySZ = 'Do you prefer to play Splat Zones only?'
     modeStrike = 'Strike a ranked mode (optional)'
 
-<<<<<<< HEAD
-    # Load relevant JSON data.
-    stagesAndModes = json.load(open('./jsons/mapsAndModes.json','r'))
-    toPreferences = json.load(open('./jsons/toPreferences.json','r'))
-    
-    # Generate the base list of valid stages, loading from mapsandModes.json and striking listed
-    # stages out of toPreferences.json.
-    validStages = list(stagesAndModes['stages'])
-    random.shuffle(validStages)
-    for strike in toPreferences['rules']['bannedStages']:
-        try: # Handle the potential exception for an unlisted stage.
-            validStages.remove(strike)
-        except:
-            pass
-
-    # Generate the base list of valid modes, loading from mapsandModes.json and striking listed
-    # modes out of toPreferences.json.
-    validModes = list(stagesAndModes['modes'])
-    random.shuffle(validModes)
-    for strike in toPreferences['rules']['bannedModes']:
-        try: # Handle the potential exception for an unlisted mode.
-            validModes.remove(strike)
-        except:
-            pass
-=======
     # Account for turf war preferences.
     if teamData[teamOne][yesTW] == 'Yes' and \
        compareTeamPreference(teamData, yesTW, teamOne, teamTwo):
@@ -140,7 +115,6 @@ def makeSetList(teamOne, teamTwo, matches):
     modeIndex = 0
     priorStage = None
     setList = teamOne+','+teamTwo+','
->>>>>>> fullRewrite
     
     # Iterate through the match generation procedure for the given number of
     # matches in this set.
