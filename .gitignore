@@ -1,0 +1,7 @@
+.vscode
+.vs
+__pycache__
+*.csv
+*.pyc
+*
+.gitignore
