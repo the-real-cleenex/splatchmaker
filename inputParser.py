@@ -11,7 +11,7 @@ def parseGoogleFormsCSV(fileName):
         toParse = str(entryData.read())
 
         # Clean out form-only instructional text.
-        pattern = re.compile(r'Choose your .{3,4} preferences \[(?P<content>.*?)\]')
+        pattern = re.compile(r'Choose your .{3,4} preferences  \[(?P<content>.*?)\]')
         toParse = re.sub(r'\"', "", toParse)
         toParse = re.sub(pattern, r'\g<1>,', toParse)
 
