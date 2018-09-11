@@ -4,5 +4,4 @@ __pycache__
 *.csv
 *.pyc
 *
-*.csv*
-__pycache__/inputParser.cpython-36.pyc
+.gitignore
